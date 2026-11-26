@@ -1,0 +1,43 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build site
+        run: |
+          set -e
+          B=https://elio-studio-ai.netlify.app
+          H=https://elio-studio-ai.github.io
+          mkdir -p _site
+          cd _site
+          curl -sSf --retry 8 --retry-all-errors --retry-delay 2 -o index.html $B/
+          curl -sSf --retry 8 --retry-all-errors --retry-delay 2 -o portfolio.html $B/portfolio.html
+          for f in index.html portfolio.html; do
+            sed -i "s|$B|$H|g; /netlify.new/d; s|<script async src=\"/.netlify/scripts/hud[^<]*</script>||" $f
+            perl -0pi -e 's/<!-- This site is hosted on Netlify.*?-->\n//s' $f
+          done
+          xargs -P3 -I{} sh -c 'mkdir -p "$(dirname "{}")" && curl -sSf --retry 8 --retry-all-errors --retry-delay 2 -o "{}" '"$B"'/{}' < ../manifest.txt
+          echo "files: $(find . -type f | wc -l)"
+          grep -ci netlify index.html portfolio.html || true
+          touch .nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: d
+        uses: actions/deploy-pages@v4
