@@ -27,13 +27,13 @@ jobs:
           curl -sSf --retry 8 --retry-all-errors --retry-delay 2 -o _site/index.html "$B/home-v39a.html"
           curl -sSf --retry 8 --retry-all-errors --retry-delay 2 -o _site/portfolio.html "$B/portfolio-v38.html"
           for f in _site/index.html _site/portfolio.html; do
-            perl -pi -e 's{\Qhttps://elio-studio-ai.github.io/preview-v11/portfolio-v38.html\E}{/portfolio.html}g; s{\Qhttps://elio-studio-ai.github.io/preview-v11/home-v39a.html\E}{/}g; s{(["'"'"'])(img15/|site/|fonts/|video34/)}{$1/preview-v11/$2}g; s{(["'"'"'])portfolio-v38\.html}{$1/portfolio.html}g; s{(["'"'"'])home-v39a\.html}{$1/}g' $f
+            perl -pi -e 's{\Qhttps://elio-studio-ai.github.io/preview-v11/portfolio-v38.html\E}{/portfolio.html}g; s{https://elio-studio-ai\.github\.io/preview-v11/home-[a-z0-9]+\.html}{/}g; s{url\((fonts|img15|site|video34|p)/}{url(/preview-v11/$1/}g; s{(["'"'"'])(img15/|site/|fonts/|video34/)}{$1/preview-v11/$2}g; s{(["'"'"'])portfolio-v38\.html}{$1/portfolio.html}g; s{(["'"'"'])home-[a-z0-9]+\.html}{$1/}g' $f
           done
           touch _site/.nojekyll
           echo "files: $(find _site -type f | wc -l)"
           wc -c _site/index.html _site/portfolio.html
-          echo "leftover relative asset refs: $(grep -o -E "[\"'](img15|site|fonts|video34)/" _site/*.html | wc -l)"
-          echo "leftover page refs: $(grep -o -E "[\"'](portfolio-v38|home-v39a)\.html" _site/*.html | wc -l)"
+          echo "leftover relative asset refs: $(grep -o -E "[\"'(](img15|site|fonts|video34)/" _site/*.html | wc -l)"
+          echo "leftover page refs: $(grep -o -E "[\"'](portfolio-v38|home-v[0-9]+[a-z]?)\.html" _site/*.html | wc -l)"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
