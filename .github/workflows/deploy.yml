@@ -29,6 +29,10 @@ jobs:
           for f in _site/index.html _site/portfolio.html; do
             perl -pi -e 's{\Qhttps://elio-studio-ai.github.io/preview-v11/portfolio-v38.html\E}{/portfolio.html}g; s{https://elio-studio-ai\.github\.io/preview-v11/home-[a-z0-9]+\.html}{/}g; s{url\((fonts|img15|site|video34|p)/}{url(/preview-v11/$1/}g; s{(["'"'"'])(img15/|site/|fonts/|video34/)}{$1/preview-v11/$2}g; s{(["'"'"'])portfolio-v38\.html}{$1/portfolio.html}g; s{(["'"'"'])home-[a-z0-9]+\.html}{$1/}g' $f
           done
+          # root fix: desktop work-grid cards never receive their reveal class (fxon),
+          # so all 20 project cards stayed opacity:0 + clip-path:inset(0 0 100%). Force them visible.
+          perl -0pi -e 's{</head>}{<style id="rootfix">\@media (min-width:861px){#work .cdg .cdc{opacity:1!important;clip-path:none!important;transform:none!important}}</style></head>}' _site/index.html
+          echo "rootfix present: $(grep -c rootfix _site/index.html)"
           touch _site/.nojekyll
           echo "files: $(find _site -type f | wc -l)"
           wc -c _site/index.html _site/portfolio.html
